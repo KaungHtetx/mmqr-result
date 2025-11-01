@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Payment Status</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        }
+        
+        body {
+            background-color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .tabs-container {
+            display: flex;
+            background: white;
+            border-radius: 12px;
+            padding: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 360px;
+        }
+        
+        .status-tab {
+            flex: 1;
+            text-align: center;
+            padding: 12px 8px;
+            font-weight: 600;
+            font-size: 14px;
+            color: #666;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+        
+        .status-tab.active {
+            background: #2196F3;
+            color: white;
+        }
+        
+        .mobile-frame {
+            width: 360px;
+            height: 700px;
+            background: #222;
+            border-radius: 40px;
+            padding: 12px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .mobile-screen {
+            width: 100%;
+            height: 100%;
+            background: white;
+            border-radius: 32px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .status-bar {
+            height: 44px;
+            background: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0 20px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            flex-shrink: 0;
+        }
+        
+        .payment-screen {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .payment-screen.hidden {
+            display: none;
+        }
+        
+        .content-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .scrollable-content {
+            flex: 1;
+            overflow-y: auto;
+        		/* padding-bottom: 10px;*/ 
+        }
+        
+        .status-section {
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        
+        .status-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            margin: 0 auto 20px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .success .status-icon {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .failed .status-icon {
+            background: #f44336;
+            color: white;
+        }
+        
+        .processing .status-icon {
+            background: #FFC107;
+            color: white;
+        }
+        
+        h2 {
+            margin: 0 0 8px 0;
+            font-size: 22px;
+            font-weight: 600;
+        }
+        
+        .status-date {
+            margin: 0 0 20px 0;
+            color: #666;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        
+        .total-amount-container {
+            margin: 10px 0px;
+            cursor: pointer;
+            padding: 12px;
+       
+            border-radius: 12px;
+            background: #f8f9fa;
+            transition: all 0.2s ease;
+        }
+        
+        .total-amount-container:hover {
+            background: #e9ecef;
+        		border-weight:5px;
+        }
+        
+        .total-amount {
+            font-size: 28px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .amount-sign {
+            margin-right: 10px;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .negative {
+            color: black;
+        }
+        
+        .toggle-icon {
+            position: absolute;
+            right: 0;
+            font-size: 18px;
+            color: #666;
+            transition: transform 0.3s ease;
+            filter: drop-shadow(0 1px 6px rgba(0,0,0,0.2));
+        }
+        
+        .toggle-icon.expanded {
+            transform: rotate(180deg);
+        }
+        
+        .fail-reason {
+            background: #ffebee;
+            color: #c62828;
+            padding: 14px;
+            border-radius: 10px;
+            margin: 16px 0;
+            font-size: 14px;
+            line-height: 1.4;
+            text-align: left;
+            border-left: 0px solid #f44336;
+        }
+        
+        .details-section {
+            margin: 10px 0;
+            text-align: left;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+        }
+        
+        .details-section.expanded {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 12px 0;
+            align-items: flex-start;
+        }
+        
+        .detail-row span:first-child {
+            color: #666;
+            flex: 1;
+            font-size: 14px;
+        }
+        
+        .detail-row span:last-child {
+            flex: 1;
+            text-align: right;
+            font-weight: 500;
+            word-break: break-all;
+            font-size: 14px;
+        }
+        
+        .detail-row.total {
+            font-weight: bold;
+            font-size: 15px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .divider {
+            height: 1px;
+            background: #e0e0e0;
+            margin: 12px 0;
+        }
+        
+        .progress-bar {
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            margin: 16px 0 12px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #FFC107;
+            width: 70%;
+            border-radius: 3px;
+        }
+        
+        .processing-text {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin: 0;
+        }
+        
+        .action-section {
+            margin-top: auto;
+            padding-top: 20px;
+        }
+        
+        .mmqr-logo {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        .mmqr-logo img {
+            height: 100px;
+            width: auto;
+        }
+        
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .action-buttons button {
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary {
+           	background:green; /*#2196F3; */
+            color: white;
+        }
+        
+        .btn-primary:active {
+        		
+         /*  background: #0d8bf2;*/
+        		background: green;
+            transform: translateY(1px);
+        }
+        
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+        
+        .btn-secondary:active {
+            background: #e9e9e9;
+            transform: translateY(1px);
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
+        .home-indicator {
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 134px;
+            height: 5px;
+            background: #000;
+            border-radius: 3px;
+            opacity: 0.3;
+        }
+    </style>
+</head>
+<body>
+    <div class="tabs-container">
+        <div class="status-tab active" onclick="showScreen('success')">Success</div>
+        <div class="status-tab" onclick="showScreen('failed')">Failed</div>
+        <div class="status-tab" onclick="showScreen('processing')">Processing</div>
+    </div>
+    
+    <div class="mobile-frame">
+        <div class="mobile-screen">
+            <div class="status-bar">
+                <span>4:20 PM</span>
+            </div>
+            
+            <!-- Success Screen -->
+            <div id="success-screen" class="payment-screen success">
+                <div class="content-container">
+                    <div class="scrollable-content">
+                        <div class="status-section">
+                            <div class="status-icon">✓</div>
+                            <h2>Payment Successful</h2>
+                            <p class="status-date">29/10/2025 16:23</p>
+                            
+                            <div class="total-amount-container" onclick="toggleDetails('success')">
+                                <div class="total-amount">
+                                    <span class="amount-sign negative">-</span>572,311.00 MMK
+                                    <span class="toggle-icon">▼</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="details-section" id="success-details">
+                            <div class="detail-row">
+                                <span>End to End ID</span>
+                                <span>6901e414c62717669008351b</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>Transaction Code</span>
+                                <span>247076604066</span>
+                            </div>
+                            
+                            <div class="divider"></div>
+                            
+                            <div class="detail-row">
+                                <span>From (Customer)</span>
+                                <span>KHM</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>Phone Number</span>
+                                <span>0943023456</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>To (Merchant)</span>
+                                <span>mer test7</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>Merchant PAN</span>
+                                <span>223659XXXXXXXXXX</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>Merchant Phone</span>
+                                <span>9946660007</span>
+                            </div>
+                            
+                            <div class="divider"></div>
+                            
+                            <div class="detail-row">
+                                <span>Amount</span>
+                                <span>2,311.00 MMK</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>Fee</span>
+                                <span>0.00 MMK</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>Discount</span>
+                                <span>0.00 MMK</span>
+                            </div>
+                            <div class="detail-row total">
+                                <span>Total</span>
+                                <span>2,311.00 MMK</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="action-section">
+                        <div class="mmqr-logo">
+                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSltnXU_A6eO1l_vl4xquOfMFqRiLpqbwEVNoMvuvTmqQ&s=10" alt="MMQR Logo">
+                        </div>
+                        <div class="action-buttons">
+                            <button class="btn-primary">Back to Home</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Failed Screen -->
+            <div id="failed-screen" class="payment-screen failed hidden">
+                <div class="content-container">
+                    <div class="scrollable-content">
+                        <div class="status-section">
+                            <div class="status-icon">✕</div>
+                            <h2>Payment Failed</h2>
+                            <p class="status-date">29/10/2025 16:23</p>
+                            
+                            
+                            
+                            <div class="total-amount-container" onclick="toggleDetails('failed')">
+                                <div class="total-amount">
+                                    <span class="amount-sign negative">-</span>2,311.00 MMK
+                                    <span class="toggle-icon">▼</span>
+                                </div>
+                            </div>
+                        		<div class="fail-reason">
+                                <strong>Failure Reason:</strong> Insufficient funds. Please check your account balance and try again.
+                            </div>
+                        </div>
+                        
+                        <div class="details-section" id="failed-details">
+                            <div class="detail-row">
+                                <span>End to End ID</span>
+                                <span>6901e414c62717669008351b</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>Error Code</span>
+                                <span>DECLINED_247</span>
+                            </div>
+                            
+                            <div class="divider"></div>
+                            
+                            <div class="detail-row">
+                                <span>From (Customer)</span>
+                                <span>KHM</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>Phone Number</span>
+                                <span>0943023456</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>To (Merchant)</span>
+                                <span>mer test7</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>Merchant PAN</span>
+                                <span>223659XXXXXXXXXX</span>
+                            </div>
+                            
+                            <div class="divider"></div>
+                            
+                            <div class="detail-row">
+                                <span>Amount</span>
+                                <span>2,311.00 MMK</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>Fee</span>
+                                <span>0.00 MMK</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>Discount</span>
+                                <span>0.00 MMK</span>
+                            </div>
+                            <div class="detail-row total">
+                                <span>Total</span>
+                                <span>2,311.00 MMK</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="action-section">
+                        <div class="mmqr-logo">
+                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSltnXU_A6eO1l_vl4xquOfMFqRiLpqbwEVNoMvuvTmqQ&s=10" alt="MMQR Logo">
+                        </div>
+                        <div class="action-buttons">
+                        		<!--  <button class="btn-secondary">Try Again</button> -->
+                            <button class="btn-primary">Back to Home</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Processing Screen -->
+            <div id="processing-screen" class="payment-screen processing hidden">
+                <div class="content-container">
+                    <div class="scrollable-content">
+                        <div class="status-section">
+                            <div class="status-icon">!</div>
+                            <h2>Processing Payment</h2>
+                            <p class="status-date">29/10/2025 16:23</p>
+                            
+                            <div class="total-amount-container" onclick="toggleDetails('processing')">
+                                <div class="total-amount">
+                                    <span class="amount-sign negative">-</span>2,311.00 MMK
+                                    <span class="toggle-icon">▼</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="details-section" id="processing-details">
+                            <div class="detail-row">
+                                <span>End to End ID</span>
+                                <span>6901e414c62717669008351b</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>Transaction Code</span>
+                                <span>247076604066</span>
+                            </div>
+                            
+                            <div class="divider"></div>
+                            
+                            <div class="detail-row">
+                                <span>From (Customer)</span>
+                                <span>KHM</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>Phone Number</span>
+                                <span>0943023456</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>To (Merchant)</span>
+                                <span>mer test7</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>Merchant PAN</span>
+                                <span>223659XXXXXXXXXX</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>Merchant Phone</span>
+                                <span>9946660007</span>
+                            </div>
+                            
+                            <div class="divider"></div>
+                            
+                            <div class="detail-row">
+                                <span>Amount</span>
+                                <span>2,311.00 MMK</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>Fee</span>
+                                <span>0.00 MMK</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>Discount</span>
+                                <span>0.00 MMK</span>
+                            </div>
+                            <div class="detail-row total">
+                                <span>Total</span>
+                                <span>2,311.00 MMK</span>
+                            </div>
+                            
+                            <div class="progress-bar">
+                                <div class="progress-fill"></div>
+                            </div>
+                            <p class="processing-text">Verifying transaction details with bank...</p>
+                        </div>
+                    </div>
+                    
+                    <div class="action-section">
+                        <div class="mmqr-logo">
+                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSltnXU_A6eO1l_vl4xquOfMFqRiLpqbwEVNoMvuvTmqQ&s=10" alt="MMQR Logo">
+                        </div>
+                        <div class="action-buttons">
+                            <button class="btn-primary">Back to Home</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="home-indicator"></div>
+        </div>
+    </div>
+
+    <script>
+        function showScreen(screenType) {
+            // Hide all screens
+            document.getElementById('success-screen').classList.add('hidden');
+            document.getElementById('failed-screen').classList.add('hidden');
+            document.getElementById('processing-screen').classList.add('hidden');
+            
+            // Show selected screen
+            document.getElementById(screenType + '-screen').classList.remove('hidden');
+            
+            // Update active tab
+            document.querySelectorAll('.status-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            if (screenType === 'success') {
+                document.querySelectorAll('.status-tab')[0].classList.add('active');
+            } else if (screenType === 'failed') {
+                document.querySelectorAll('.status-tab')[1].classList.add('active');
+            } else if (screenType === 'processing') {
+                document.querySelectorAll('.status-tab')[2].classList.add('active');
+            }
+        }
+        
+        function toggleDetails(screenType) {
+            const detailsSection = document.getElementById(`${screenType}-details`);
+            const toggleIcon = document.querySelector(`#${screenType}-screen .toggle-icon`);
+            
+            detailsSection.classList.toggle('expanded');
+            toggleIcon.classList.toggle('expanded');
+        }
+    </script>
+</body>
+</html>
