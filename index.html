@@ -1,3 +1,139 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MMQR Result</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dashed #ddd;
+            font-size: 15px;
+        }
+
+        .label {
+            color: #777;
+        }
+
+        .success { color: #1C9E2C; font-weight: bold; }
+        .fail { color: #E60000; font-weight: bold; }
+        .processing { color: #D47F00; font-weight: bold; }
+
+        .reason-box {
+            background: #fff4f4;
+            color: #d60000;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            border-left: 4px solid #d60000;
+        }
+        .processing-box {
+            background: #fff8e6;
+            color: #b97600;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            border-left: 4px solid #b97600;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <img src="https://i.imgur.com/J0TeZQO.png" width="110"><br>
+        <h3>Transaction History Details</h3>
+    </div>
+
+    <div id="content">Loading...</div>
+
+</div>
+
+<script>
+    async function loadData() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const status = urlParams.get("status") || "success";
+
+        const res = await fetch(`data/${status}.json`);
+        const data = await res.json();
+
+        const statusClass =
+            data.status === "success" ? "success" :
+            data.status === "fail" ? "fail" : "processing";
+
+        let html = `
+            <div class="row"><span class="label">End to End ID</span><span>${data.endToEndId}</span></div>
+            <div class="row"><span class="label">Transaction Code</span><span>${data.transactionCode}</span></div>
+            <div class="row"><span class="label">ClrSysRef</span><span>${data.clrSysRef}</span></div>
+            <div class="row"><span class="label">Source</span><span>${data.source}</span></div>
+            <div class="row"><span class="label">Transaction Name</span><span>${data.transactionName}</span></div>
+            <div class="row"><span class="label">Transaction Date</span><span>${data.transactionDate}</span></div>
+
+            <div class="row">
+                <span class="label">Transaction Status</span>
+                <span class="${statusClass}">${data.status.toUpperCase()}</span>
+            </div>
+
+            <div class="row"><span class="label">From (Customer Name)</span><span>${data.fromCustomerName}</span></div>
+            <div class="row"><span class="label">Phone Number</span><span>${data.fromPhoneNumber}</span></div>
+
+            <div class="row"><span class="label">To (Merchant Name)</span><span>${data.toMerchantName}</span></div>
+            <div class="row"><span class="label">Merchant PAN</span><span>${data.merchantPAN}</span></div>
+
+            <div class="row"><span class="label">Amount</span><span>${data.amount} MMK</span></div>
+            <div class="row"><span class="label">Fee</span><span>${data.fee} MMK</span></div>
+            <div class="row"><span class="label">Discount</span><span>${data.discount} MMK</span></div>
+            <div class="row"><span class="label">Total</span><span>${data.total} MMK</span></div>
+
+            <div class="row"><span class="label">Bill Number</span><span>${data.billNumber}</span></div>
+            <div class="row"><span class="label">Reference Label</span><span>${data.referenceLabel}</span></div>
+            <div class="row"><span class="label">Purpose</span><span>${data.purpose}</span></div>
+        `;
+
+        if (data.status === "fail") {
+            html += `<div class="reason-box">❌ Reason: ${data.reason}</div>`;
+        }
+
+        if (data.status === "processing") {
+            html += `<div class="processing-box">⏳ Status: ${data.reason}</div>`;
+        }
+
+        document.getElementById("content").innerHTML = html;
+    }
+
+    loadData();
+</script>
+
+</body>
+</html>
+
+
+
 <!DOCTYPE 
 <html lang="en">
 <head>
@@ -658,4 +794,5 @@
         }
     </script>
 </body>
-</html> html>
+</html> 
+html>
