@@ -1,0 +1,25 @@
+{
+  "status": "fail",
+  "message": "Payment Failed",
+  "endToEndId": "693284bff7d9013e11fe5f06",
+  "transactionCode": "250263471657",
+  "clrSysRef": "0122025120513375198",
+  "source": "MoMoney Wallet",
+  "transactionName": "MoTransferMMQR",
+  "transactionDate": "2025-12-05 13:37",
+  "fromCustomerName": "KHM",
+  "fromPhoneNumber": "XXXXXX3456",
+  "toMerchantName": "mer test7",
+  "merchantPAN": "223659XXXXX5461",
+  "amount": 234.00,
+  "fee": 0.00,
+  "discount": 0.00,
+  "total": 234.00,
+  "receiverPhone": "XXXXXX0007",
+
+  "billNumber": "BILL-001122",
+  "referenceLabel": "REF-8899",
+  "purpose": "Goods Payment",
+
+  "reason": "Insufficient balance"
+}
